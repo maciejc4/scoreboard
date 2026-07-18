@@ -1,4 +1,4 @@
-package com.mc4.scoreboard;
+package com.mc4.scoreboard.api.config;
 
 /** Immutable configuration for a scoreboard instance. */
 public record ScoreboardConfig(int historyLimit) {

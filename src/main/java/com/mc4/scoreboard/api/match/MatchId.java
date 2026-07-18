@@ -1,4 +1,4 @@
-package com.mc4.scoreboard;
+package com.mc4.scoreboard.api.match;
 
 /**
  * Opaque, immutable capability handle identifying a match.

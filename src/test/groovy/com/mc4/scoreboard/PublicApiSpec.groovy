@@ -1,5 +1,10 @@
 package com.mc4.scoreboard
 
+import com.mc4.scoreboard.api.Scoreboard
+import com.mc4.scoreboard.api.config.ScoreboardConfig
+import com.mc4.scoreboard.api.match.FinishedMatch
+import com.mc4.scoreboard.api.match.MatchId
+import com.mc4.scoreboard.api.match.MatchSummary
 import spock.lang.Specification
 
 import java.time.Duration

@@ -1,28 +1,34 @@
-package com.mc4.scoreboard;
+package com.mc4.scoreboard.api.match;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 
-/** Immutable point-in-time view of a live match. */
-public record MatchSummary(
+/** Immutable record of a completed match. */
+public record FinishedMatch(
         MatchId matchId,
         String homeTeam,
         String awayTeam,
         int homeScore,
         int awayScore,
-        Instant startedAt) {
+        Instant startedAt,
+        Instant finishedAt) {
 
-    public MatchSummary {
+    public FinishedMatch {
         Objects.requireNonNull(matchId, "matchId");
         Objects.requireNonNull(homeTeam, "homeTeam");
         Objects.requireNonNull(awayTeam, "awayTeam");
         Objects.requireNonNull(startedAt, "startedAt");
+        Objects.requireNonNull(finishedAt, "finishedAt");
         requireNonNegative("homeScore", homeScore);
         requireNonNegative("awayScore", awayScore);
+        if (finishedAt.isBefore(startedAt)) {
+            throw new IllegalArgumentException("finishedAt must not be before startedAt");
+        }
     }
 
-    public int total() {
-        return homeScore + awayScore;
+    public Duration duration() {
+        return Duration.between(startedAt, finishedAt);
     }
 
     private static void requireNonNegative(String name, int score) {

@@ -1,4 +1,9 @@
-package com.mc4.scoreboard;
+package com.mc4.scoreboard.api;
+
+import com.mc4.scoreboard.api.config.ScoreboardConfig;
+import com.mc4.scoreboard.api.match.FinishedMatch;
+import com.mc4.scoreboard.api.match.MatchId;
+import com.mc4.scoreboard.api.match.MatchSummary;
 
 import java.util.List;
 import java.util.Objects;
