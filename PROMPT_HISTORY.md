@@ -318,3 +318,35 @@ Appended this very exchange to `PROMPT_HISTORY.md` as **Prompt 10 / Response 10*
 format.
 
 ---
+
+## Prompt 11 — User
+
+> Ok, now commit the content of this directory to the newly created repo:
+> https://github.com/maciejc4/scoreboard — commit title: "Add specification and API description
+> files". You can fix formatting etc.
+
+### Assistant — Response 11
+
+Committed and pushed all directory contents to `https://github.com/maciejc4/scoreboard` on the
+`main` branch. The directory was not yet a git repository, so I initialized it, set `main` as the
+default branch, added the `origin` remote, staged all files (`SPECIFICATION.md`, `API.md`,
+`ACCEPTANCE.TESTS.md`, `PROMPT_HISTORY.md`, `AGENTS.md`), committed as **`fe65ae6` — "Add
+specification and API description files"**, and pushed to the previously empty remote. The existing
+files were already well-formatted, so no formatting fixes were needed.
+
+Flagged that, per the `AGENTS.md` rule, this commit exchange was not yet logged in
+`PROMPT_HISTORY.md`, and offered to append it and push a follow-up commit.
+
+---
+
+## Prompt 12 — User
+
+> yes
+
+### Assistant — Response 12
+
+Appended the commit exchange (**Prompt 11 / Response 11**) and this confirmation exchange (**Prompt
+12 / Response 12**) to `PROMPT_HISTORY.md`, following the established format, then committed and
+pushed the updated history to `origin/main` as a follow-up commit.
+
+---
