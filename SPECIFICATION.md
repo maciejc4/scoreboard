@@ -354,10 +354,12 @@ RuntimeException
   ```
 
 ### 15.6 Value types (P3#6 = records)
-- `MatchId`, `MatchSummary`, `FinishedMatch`, `ScoreboardConfig` are `record`s (immutable, value
-  equality for free).
-- `MatchId`'s canonical constructor is **package-private** (library-only construction, §14.4);
-  clients only ever receive one. `toString` overridden to be opaque (`Match#<seq>`).
+- `MatchSummary`, `FinishedMatch`, and `ScoreboardConfig` are `record`s (immutable, value equality
+  for free).
+- `MatchId` is a final immutable value class because Java requires a public record's canonical
+  constructor to be public, which would violate the capability-handle contract in §14.4. Its
+  constructor is **package-private** (library-only construction); clients only ever receive one.
+  `toString` is opaque (`Match#<seq>`).
 - `getSummary` / `getHistory` return `List.copyOf(...)` (unmodifiable) snapshots.
 
 ### 15.7 Extensibility hooks

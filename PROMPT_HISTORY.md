@@ -377,3 +377,39 @@ it with **jenv**, and pinned it for the repo via `.java-version` (21.0). Verifie
 21 (class-file major version 65).
 
 ---
+
+## Prompt 14 — User
+
+> Update package name in all MD files to com.mc4.scoreboard instead of com.example.scoreboard
+> [@API.md](file:///Users/maciej/repo-all/recruitment/API.md)
+
+### Assistant — Response 14
+
+Updated the package name in all Markdown files from `com.example.scoreboard` to
+`com.mc4.scoreboard`. The only occurrence was in `API.md`, and verification confirmed no old
+package references remain in Markdown files.
+
+---
+
+## Prompt 15 — User
+
+> Ok, now - implement all interfaces described in API.md (and dtos),. Assure that these follows
+> SPECIFICATION.md as well. So later on we can implement acceptance tests before starting the
+> business logic implementation.
+> [@PROMPT_HISTORY.md](file:///Users/maciej/repo-all/recruitment/PROMPT_HISTORY.md)
+
+### Assistant — Response 15
+
+Implemented the complete public API surface under `com.mc4.scoreboard`: `Scoreboard`,
+`ScoreboardConfig`, `MatchId`, `MatchSummary`, `FinishedMatch`, `ScoreboardException`, and
+`MatchNotFoundException`.
+
+The `Scoreboard` factories intentionally throw `UnsupportedOperationException` after validating
+their arguments, so acceptance tests can be written against the final contract before business
+logic is introduced. Added six Spock contract tests covering configuration, derived DTO values,
+opaque `MatchId` behavior, and factory null handling. `mvn clean test` passes with 6 tests.
+
+Also synchronized `API.md` and `SPECIFICATION.md`: `MatchId` is documented as a final immutable
+value class because Java does not permit a public record to hide its canonical constructor.
+
+---

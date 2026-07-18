@@ -3,7 +3,7 @@
 Reference for every type and public method exposed by the library. Derived from
 `SPECIFICATION.md` (§14 Public API, §15 Implementation). Target: **Java 21**.
 
-- **Package:** `com.example.scoreboard` (placeholder — adjust to the company namespace).
+- **Package:** `com.mc4.scoreboard`.
 - **Entry point:** the `Scoreboard` interface, obtained via static factory.
 - **Thread-safety:** every method on a `Scoreboard` instance is safe for concurrent use by
   multiple threads (single internal `ReentrantReadWriteLock`).
@@ -115,12 +115,12 @@ ScoreboardConfig config = ScoreboardConfig.builder()
 
 ---
 
-## 3. `MatchId` (immutable record)
+## 3. `MatchId` (immutable final value class)
 
 Opaque handle identifying a match. **Capability handle** — clients only ever receive one from
 `startMatch` and cannot construct or forge one.
 
-- **Construction:** no public constructor (canonical constructor is package-private).
+- **Construction:** no public constructor (constructor is package-private).
 - **Equality:** value-based `equals` / `hashCode`.
 - **`toString`:** opaque, for debugging only (e.g. `Match#42`); **not** a documented or parseable
   format.
