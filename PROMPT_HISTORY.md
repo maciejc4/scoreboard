@@ -413,3 +413,57 @@ Also synchronized `API.md` and `SPECIFICATION.md`: `MatchId` is documented as a 
 value class because Java does not permit a public record to hide its canonical constructor.
 
 ---
+
+## Prompt 16 — User
+
+> Implement acceptance tests covering scenarios described in @file:ACCEPTANCE.TESTS.md - tests
+> should compile and run - but fail until we implement business logic. Use Spock.
+> [@API.md](file:///Users/maciej/repo-all/recruitment/API.md)
+> [@ACCEPTANCE.TESTS.md](file:///Users/maciej/repo-all/recruitment/ACCEPTANCE.TESTS.md)
+
+### Assistant — Response 16
+
+Implemented all 43 acceptance scenarios in a black-box Spock specification against the public
+`Scoreboard` API. Data-driven scenarios expand the suite to 65 acceptance test iterations and
+cover starting, scoring, corrections, finishing, ordering, lookup, history, validation,
+immutability, configuration, and concurrency.
+
+Verified with `mvn test`: all Groovy/Spock sources compile and all tests execute. The build fails as
+intended because `Scoreboard.inMemory()` still throws `UnsupportedOperationException`; the existing
+six public API contract tests continue to pass. Overall result: 71 tests run, 8 assertion failures
+and 46 errors, all caused by the deliberately unimplemented in-memory scoreboard factory/business
+logic.
+
+No production code or specification documents were changed.
+
+---
+
+## Prompt 17 — User
+
+> I don't like PublicApiSpec - it should be splitted pet Match/ocnfiguration etc, same as you did
+> for Scoreboard. One more thing - i see that in some cases - e.g. @file:PublicApiSpec.groovy
+> l:39 you create MatchId - in invalid way - it exceeds access rights - such solution is not
+> acceptable - acceptance tests should only use system in the way, cleint will be using it - so
+> update all to follow that.
+> [@PublicApiSpec.groovy](file:///Users/maciej/repo-all/recruitment/src/test/groovy/com/mc4/scoreboard/PublicApiSpec.groovy)
+> [@PublicApiSpec.groovy](file:///Users/maciej/repo-all/recruitment/src/test/groovy/com/mc4/scoreboard/PublicApiSpec.groovy)
+
+### Assistant — Response 17
+
+Removed the mixed `PublicApiSpec` and replaced it with focused client-facing Spock specs:
+`ScoreboardSpec`, `ScoreboardConfigSpec`, `MatchIdSpec`, `MatchSummarySpec`, and
+`FinishedMatchSpec`.
+
+Eliminated every direct construction of `MatchId`, `MatchSummary`, and `FinishedMatch` from the
+test source set, as well as the reflective constructor-access assertion. Match identifiers and DTOs
+are now obtained exclusively through normal public `Scoreboard` workflows. Moved the acceptance
+spec into the `com.mc4.scoreboard.client` package so it represents code outside the implementation
+packages and audited all test sources for access-rights workarounds.
+
+Verified with `mvn clean test`: all specs compile and execute. Maven runs 75 test iterations; the
+expected 50 errors and 8 assertion failures all trace to the deliberately unimplemented
+`Scoreboard.inMemory()` factory. The remaining instance-independent API contracts pass.
+
+No production code or specification documents were changed.
+
+---
