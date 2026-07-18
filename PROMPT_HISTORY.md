@@ -350,3 +350,30 @@ Appended the commit exchange (**Prompt 11 / Response 11**) and this confirmation
 pushed the updated history to `origin/main` as a follow-up commit.
 
 ---
+
+## Prompt 13 — User
+
+> Ok, now set up a Java 21 project in this repo (Java 21, Maven, Lombok, Spock for testing) so I
+> can start coding.
+
+### Assistant — Response 13
+
+Scaffolded a Maven project targeting **Java 21**, with **Lombok** and **Spock** (Groovy) for tests:
+
+- **`pom.xml`** — `com.example:scoreboard:0.1.0-SNAPSHOT`; `maven.compiler.release=21`; Lombok
+  (`provided`, wired via `annotationProcessorPaths`); Spock 2.4-M6 + Groovy 4.0 (`test`);
+  `gmavenplus-plugin` to compile Groovy specs; Surefire configured to run `*Spec`/`*Test`.
+- **Source layout** — `src/main/java/com/example/scoreboard` and
+  `src/test/groovy/com/example/scoreboard`.
+- **`MatchId.java`** — first domain type (opaque, package-private constructor, Lombok
+  `@EqualsAndHashCode`), matching the API spec, so the build exercises Lombok.
+- **`MatchIdSpec.groovy`** — sanity spec verifying the toolchain (Groovy/Spock compile & run,
+  Lombok-generated `equals`/`hashCode`).
+- **`.gitignore`** — Maven `target/`, IDE files, OS cruft.
+
+The machine had no JDK 21 (only 17/25/26), so I installed **OpenJDK 21** via Homebrew, registered
+it with **jenv**, and pinned it for the repo via `.java-version` (21.0). Verified end-to-end:
+`mvn clean test` → **BUILD SUCCESS**, 2 tests passing, and confirmed the emitted bytecode is Java
+21 (class-file major version 65).
+
+---
