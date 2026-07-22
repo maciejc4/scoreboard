@@ -1,6 +1,9 @@
 package com.mc4.scoreboard.api.config;
 
+import lombok.Builder;
+
 /** Immutable configuration for a scoreboard instance. */
+@Builder
 public record ScoreboardConfig(int historyLimit) {
 
     public static final int DEFAULT_HISTORY_LIMIT = 1_000;
@@ -11,24 +14,8 @@ public record ScoreboardConfig(int historyLimit) {
         }
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    /** Fluent builder initialized with the documented defaults. */
-    public static final class Builder {
+    /** Pre-seeds the generated builder with the documented default. */
+    public static class ScoreboardConfigBuilder {
         private int historyLimit = DEFAULT_HISTORY_LIMIT;
-
-        private Builder() {
-        }
-
-        public Builder historyLimit(int limit) {
-            this.historyLimit = limit;
-            return this;
-        }
-
-        public ScoreboardConfig build() {
-            return new ScoreboardConfig(historyLimit);
-        }
     }
 }

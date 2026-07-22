@@ -4,6 +4,8 @@ import com.mc4.scoreboard.api.config.ScoreboardConfig;
 import com.mc4.scoreboard.api.match.FinishedMatch;
 import com.mc4.scoreboard.api.match.MatchId;
 import com.mc4.scoreboard.api.match.MatchSummary;
+import com.mc4.scoreboard.core.InMemoryScoreboard;
+import lombok.NonNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +22,7 @@ public interface Scoreboard {
 
     static Scoreboard inMemory(ScoreboardConfig config) {
         Objects.requireNonNull(config, "config");
-        throw new UnsupportedOperationException("In-memory scoreboard is not implemented yet");
+        return new InMemoryScoreboard(config);
     }
 
     MatchId startMatch(String homeTeam, String awayTeam);
