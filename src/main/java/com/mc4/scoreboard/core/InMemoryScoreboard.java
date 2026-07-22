@@ -11,7 +11,9 @@ import lombok.NonNull;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 
 /**
  * Thread-safe in-memory {@link Scoreboard}.
@@ -27,6 +29,8 @@ public final class InMemoryScoreboard implements Scoreboard {
 
     private final ScoreboardConfig config;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Lock readLock = lock.readLock();
+    private final Lock writeLock = lock.writeLock();
 
     private long matchCounter;
     Map<MatchId, Match> live = new HashMap<>();
@@ -44,54 +48,60 @@ public final class InMemoryScoreboard implements Scoreboard {
             throw new IllegalArgumentException("Home and Away teams cannot be the same");
         }
 
-        ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-        writeLock.lock();
-        try {
+        return withWriteLock(() -> {
             matchCounter++;
             MatchId matchId = new MatchId(matchCounter);
             live.put(matchId, new Match(matchId, homeTeam, awayTeam, Instant.now()));
             return matchId;
-        } finally {
-            writeLock.unlock();
-        }
+        });
     }
 
     @Override
     public void recordHomeGoal(MatchId matchId) {
-        Match match = liveMatch(matchId);
-        match.scoreHome();
+        withWriteLock(() -> {
+            Match match = liveMatch(matchId);
+            match.scoreHome();
+        });
     }
 
     @Override
     public void recordAwayGoal(MatchId matchId) {
-        Match match = liveMatch(matchId);
-        match.scoreAway();
+        withWriteLock(() -> {
+            Match match = liveMatch(matchId);
+            match.scoreAway();
+        });
     }
 
     @Override
     public void correctHomeGoal(MatchId matchId) {
-        Match match = liveMatch(matchId);
-        match.correctHome();
+        withWriteLock(() -> {
+            Match match = liveMatch(matchId);
+            match.correctHome();
+        });
     }
 
     @Override
     public void correctAwayGoal(MatchId matchId) {
-        Match match = liveMatch(matchId);
-        match.correctAway();
+        withWriteLock(() -> {
+            Match match = liveMatch(matchId);
+            match.correctAway();
+        });
     }
 
     @Override
     public void finishMatch(MatchId matchId) {
-        Match match = liveMatch(matchId);
-        FinishedMatch finished = match.toFinished(Instant.now());
-        history.add(finished);
-        live.remove(matchId);
+        withWriteLock(() -> {
+            Match match = liveMatch(matchId);
+            FinishedMatch finished = match.toFinished(Instant.now());
+            history.add(finished);
+            live.remove(matchId);
+        });
     }
 
 
     @Override
     public Optional<MatchSummary> getMatch(MatchId matchId) {
-        return Optional.ofNullable(live.get(matchId)).map(Match::toSummary);
+        return withReadLock(() -> Optional.ofNullable(live.get(matchId)).map(Match::toSummary));
     }
 
     private Match liveMatch(MatchId matchId) {
@@ -105,22 +115,46 @@ public final class InMemoryScoreboard implements Scoreboard {
 
     @Override
     public List<MatchSummary> getSummary() {
-        return List.copyOf(live.values()).stream()
+        return withReadLock(() -> List.copyOf(live.values()).stream()
                 .sorted(SUMMARY_ORDER)
                 .map(Match::toSummary)
-                .toList();
+                .toList());
 
     }
 
 
     @Override
     public List<FinishedMatch> getHistory() {
-        return List.copyOf(history).stream().toList();
+        return withReadLock(() -> List.copyOf(history).stream().toList());
     }
 
     @Override
     public void clearHistory() {
-        history.clear();
+        withWriteLock(history::clear);
+    }
+
+    private <T> T withReadLock(Supplier<T> operation) {
+        return withLock(readLock, operation);
+    }
+
+    private <T> T withWriteLock(Supplier<T> operation) {
+        return withLock(writeLock, operation);
+    }
+
+    private void withWriteLock(Runnable operation) {
+        withLock(writeLock, () -> {
+            operation.run();
+            return null;
+        });
+    }
+
+    private static <T> T withLock(Lock lock, Supplier<T> operation) {
+        lock.lock();
+        try {
+            return operation.get();
+        } finally {
+            lock.unlock();
+        }
     }
 
     private static UnsupportedOperationException notImplemented() {

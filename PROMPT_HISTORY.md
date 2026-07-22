@@ -467,3 +467,45 @@ expected 50 errors and 8 assertion failures all trace to the deliberately unimpl
 No production code or specification documents were changed.
 
 ---
+
+## Prompt 18 — User
+
+> `InMemoryScoreboard.java` needs to be prepared for concurrent access—we use
+> `ReentrantReadWriteLock` for it. It needs to be used in every operation reading/updating
+> `history` and `matchCounter`. Depending on the situation, we should use `writeLock` or
+> `readLock`. Introduce it. `startMatch` already supports it.
+>
+> [@InMemoryScoreboard.java](file:///Users/maciej/repo-all/recruitment/src/main/java/com/mc4/scoreboard/core/InMemoryScoreboard.java)
+
+### Assistant — Response 18
+
+Implemented the locking changes in [InMemoryScoreboard.java](/Users/maciej/repo-all/recruitment/src/main/java/com/mc4/scoreboard/core/InMemoryScoreboard.java:29).
+
+- `writeLock`: `startMatch`, both goal recorders, both corrections, `finishMatch`, `clearHistory`.
+- `readLock`: `getMatch`, `getSummary`, `getHistory`.
+- Every lock is released in `finally`; `finishMatch` now moves a match to history atomically relative to readers.
+
+Verification: all four concurrency acceptance tests (`AT-40`–`AT-43`) pass. The full suite still has 7 pre-existing functional failures unrelated to locking (history ordering/cap, name validation/trimming, and null `getMatch` handling). The exchange was logged in `PROMPT_HISTORY.md`.
+
+---
+
+## Prompt 19 — User
+
+> How about extracting the locking parts into separate methods (accepting a function with the
+> actual business logic as a parameter), so we won't need to repeat the `.lock()`, `try`, and
+> `finally` logic every time?
+>
+> [@InMemoryScoreboard.java](file:///Users/maciej/repo-all/recruitment/src/main/java/com/mc4/scoreboard/core/InMemoryScoreboard.java)
+
+### Assistant — Response 19
+
+Refactored [InMemoryScoreboard.java](/Users/maciej/repo-all/recruitment/src/main/java/com/mc4/scoreboard/core/InMemoryScoreboard.java:47) so each operation now declares only its lock intent and business logic.
+
+- `withReadLock(Supplier<T>)` handles returning read operations.
+- `withWriteLock(Supplier<T>)` handles returning write operations.
+- `withWriteLock(Runnable)` handles void write operations.
+- A single `withLock(Lock, Supplier<T>)` method owns the `.lock()` / `try` / `finally` / `.unlock()` sequence.
+
+This removes the repeated locking ceremony without changing lock scope or behavior. Verification: all four concurrency acceptance tests (`AT-40`–`AT-43`) pass.
+
+---
