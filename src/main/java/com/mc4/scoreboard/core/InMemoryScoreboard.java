@@ -7,7 +7,7 @@ import com.mc4.scoreboard.api.match.MatchId;
 import com.mc4.scoreboard.api.match.MatchNotFoundException;
 import com.mc4.scoreboard.api.match.MatchSummary;
 import com.mc4.scoreboard.core.entity.Match;
-import lombok.NonNull;
+import com.mc4.scoreboard.core.entity.TeamName;
 
 import java.time.Instant;
 import java.util.*;
@@ -41,17 +41,17 @@ public final class InMemoryScoreboard implements Scoreboard {
     }
 
     @Override
-    public MatchId startMatch(@NonNull String homeTeam, @NonNull String awayTeam) {
-        String normalizedHomeTeam = homeTeam.trim().toUpperCase(Locale.ROOT);
-        String normalizedAwayTeam = awayTeam.trim().toUpperCase(Locale.ROOT);
-        if (normalizedHomeTeam.equals(normalizedAwayTeam)) {
+    public MatchId startMatch(String homeTeam, String awayTeam) {
+        TeamName homeTeamName = new TeamName(homeTeam);
+        TeamName awayTeamName = new TeamName(awayTeam);
+        if (homeTeamName.equals(awayTeamName)) {
             throw new IllegalArgumentException("Home and Away teams cannot be the same");
         }
 
         return withWriteLock(() -> {
             matchCounter++;
             MatchId matchId = new MatchId(matchCounter);
-            live.put(matchId, new Match(matchId, homeTeam, awayTeam, Instant.now()));
+            live.put(matchId, new Match(matchId, homeTeamName, awayTeamName, Instant.now()));
             return matchId;
         });
     }

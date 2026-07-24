@@ -91,7 +91,7 @@ scoring rules, authentication/authorization.
 | Type | Kind | Fields / notes |
 |------|------|----------------|
 | `MatchId` | opaque value object | wraps the monotonic start `long`; `equals`/`hashCode` by value; no client-constructable meaning |
-| `TeamName` (internal) | value | `original` (display, trimmed) + `normalized` (`trim` → `toUpperCase(Locale.ROOT)`) |
+| `TeamName` (internal) | immutable value object | `original` (display, trimmed) + `normalized` (`trim` → `toUpperCase(Locale.ROOT)`); `equals`/`hashCode` use `normalized` only |
 | `MatchSummary` | immutable | `matchId`, home/away names (original), home/away score, total, `startedAt` |
 | `FinishedMatch` | immutable | see §4.6 |
 | `Scoreboard` | service interface | the public API entry point |
@@ -100,14 +100,15 @@ All returned collections and value objects are immutable / defensively copied.
 
 ## 6. Validation & normalization (I#4, F#1, F#2)
 
-Applied on **start**:
-1. `home` and `away` MUST be non-null and non-blank (after trim) → else `IllegalArgumentException`.
-2. Normalize each name: `trim`, then `toUpperCase(Locale.ROOT)` (F#1 — avoids the Turkish-`i`
-   locale bug).
-3. If `normalized(home).equals(normalized(away))` → self-play → `IllegalArgumentException`.
-4. Store **both** forms (F#2): `original` (trimmed, original case) for display in summaries/history;
-   `normalized` for the self-play check (and any future equality needs). Display MUST preserve
-   the caller's casing (e.g. "Mexico", not "MEXICO").
+Applied on **start** through the internal `TeamName` value object:
+1. `home` and `away` MUST be non-null (`NullPointerException`) and non-blank after trimming
+   (`IllegalArgumentException`).
+2. `TeamName` stores both forms (F#2): `original` (trimmed, original case) for display in
+   summaries/history, and `normalized` (`original.toUpperCase(Locale.ROOT)`) for identity (F#1 —
+   avoids the Turkish-`i` locale bug).
+3. `TeamName.equals` and `hashCode` use only `normalized`; if the home and away values are equal,
+   starting the self-play match throws `IllegalArgumentException`.
+4. Display MUST preserve the caller's casing (e.g. "Mexico", not "MEXICO").
 
 ## 7. Ordering rules (I#7)
 
@@ -333,8 +334,8 @@ RuntimeException
 
 ### 15.4 Internal data structures
 - **Live matches:** `Map<MatchId, Match>` (e.g. `HashMap`) guarded by the lock. `Match` is an
-  internal **mutable** holder (`MatchId`, home/away names in original + normalized form, `int`
-  scores, `long startSequence`, `Instant startedAt`) — never exposed; only immutable `MatchSummary`
+  internal **mutable** holder (`MatchId`, immutable home/away `TeamName` values, `int` scores,
+  `long startSequence`, `Instant startedAt`) — never exposed; only immutable `MatchSummary`
   records escape.
 - **Start sequence & id:** an `AtomicLong` supplies a strictly monotonic sequence; each
   `startMatch` takes the next value as both the `MatchId` payload and the recency key.

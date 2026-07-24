@@ -509,3 +509,45 @@ Refactored [InMemoryScoreboard.java](/Users/maciej/repo-all/recruitment/src/main
 This removes the repeated locking ceremony without changing lock scope or behavior. Verification: all four concurrency acceptance tests (`AT-40`–`AT-43`) pass.
 
 ---
+
+## Prompt 20 — User
+
+> One more thing—`Match.java` currently stores team names as `String`s and doesn't store normalized
+> names; we calculate them in `startMatch`. Introduce a new `TeamName` value object storing both
+> the original and normalized names (two fields). Comparing normalized names should also be moved
+> from `startMatch` to these value objects. Also verify the `InMemoryScoreboard.java` implementation
+> to see whether there is anything else we should move there.
+>
+> [@InMemoryScoreboard.java](file:///Users/maciej/repo-all/recruitment/src/main/java/com/mc4/scoreboard/core/InMemoryScoreboard.java)
+> [@Match.java](file:///Users/maciej/repo-all/recruitment/src/main/java/com/mc4/scoreboard/core/entity/Match.java)
+
+### Assistant — Response 20
+
+Introduced [TeamName.java](/Users/maciej/repo-all/recruitment/src/main/java/com/mc4/scoreboard/core/entity/TeamName.java:7) and moved all team-name-specific behavior into it:
+
+- Stores the trimmed `original` and `Locale.ROOT`-uppercase `normalized` values.
+- Owns null/blank validation and trimming.
+- Implements `equals`/`hashCode` using only `normalized`.
+- `Match` now stores `TeamName` values and maps only `original` into public summary/history DTOs.
+- `InMemoryScoreboard.startMatch` constructs and compares the value objects; it contains no raw-string trimming or normalization. Its remaining self-play rejection is the match-level invariant involving both teams.
+
+Updated `SPECIFICATION.md` to document these ownership and equality rules. Verification passed: 6 focused `TeamName` tests and 14 relevant public acceptance tests, 20 tests total with no failures.
+
+---
+
+## Prompt 21 — User
+
+> Introduce Lombok to `TeamName`.
+
+### Assistant — Response 21
+
+Updated [TeamName.java](/Users/maciej/repo-all/recruitment/src/main/java/com/mc4/scoreboard/core/entity/TeamName.java:10) to use Lombok:
+
+- `@Value` provides immutability and generated accessors.
+- `@Accessors(fluent = true)` preserves `original()` and `normalized()`.
+- `@EqualsAndHashCode(of = "normalized")` preserves normalized-only equality.
+- The validating constructor and original-only `toString()` remain explicit.
+
+Verification passed: all 6 `TeamName` tests and 14 related acceptance tests, 20 tests total.
+
+---

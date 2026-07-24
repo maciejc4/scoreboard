@@ -10,14 +10,14 @@ import java.time.Instant;
 @Getter
 public class Match {
     private final MatchId id;
-    private final String homeTeamName;
-    private final String awayTeamName;
+    private final TeamName homeTeamName;
+    private final TeamName awayTeamName;
     private int homeScore;
     private int awayScore;
     private Status status;
     private final Instant startTime;
 
-    public Match(MatchId id, String homeTeamName, String awayTeamName, Instant startTime) {
+    public Match(MatchId id, TeamName homeTeamName, TeamName awayTeamName, Instant startTime) {
         this.id = id;
         this.homeTeamName = homeTeamName;
         this.awayTeamName = awayTeamName;
@@ -53,13 +53,13 @@ public class Match {
 
     public MatchSummary toSummary() {
         return new MatchSummary(
-                id, homeTeamName, awayTeamName,
+                id, homeTeamName.original(), awayTeamName.original(),
                 homeScore, awayScore, startTime);
     }
 
     public FinishedMatch toFinished(Instant finishedAt) {
         return new FinishedMatch(
-                id, homeTeamName, awayTeamName,
+                id, homeTeamName.original(), awayTeamName.original(),
                 homeScore, awayScore, startTime, finishedAt);
     }
 
