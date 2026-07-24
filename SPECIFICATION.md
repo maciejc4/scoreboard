@@ -339,9 +339,9 @@ RuntimeException
   records escape.
 - **Start sequence & id:** an `AtomicLong` supplies a strictly monotonic sequence; each
   `startMatch` takes the next value as both the `MatchId` payload and the recency key.
-- **History:** a bounded `ArrayDeque<FinishedMatch>`. On `finishMatch`, if `size == historyLimit`,
-  `removeFirst()` (evict oldest) before `addLast(record)`. `getHistory()` returns an immutable copy
-  in **reverse** order (most-recently-finished first).
+- **History:** a bounded `ArrayDeque<FinishedMatch>` stored most-recently-finished first.
+  `finishMatch` uses `addFirst(record)` and, if the configured limit is exceeded, `removeLast()`
+  evicts the oldest entry. `getHistory()` returns an immutable copy in the deque's stored order.
 
 ### 15.5 Ordering implementation (§7)
 - Sorting is done on **internal** match snapshots by `(total desc, startSequence desc)`, then

@@ -34,7 +34,7 @@ public final class InMemoryScoreboard implements Scoreboard {
 
     private long matchCounter;
     Map<MatchId, Match> live = new HashMap<>();
-    LinkedList<FinishedMatch> history = new LinkedList<>();
+    Deque<FinishedMatch> history = new ArrayDeque<>();
 
     public InMemoryScoreboard(ScoreboardConfig config) {
         this.config = Objects.requireNonNull(config, "config");
@@ -93,7 +93,10 @@ public final class InMemoryScoreboard implements Scoreboard {
         withWriteLock(() -> {
             Match match = liveMatch(matchId);
             FinishedMatch finished = match.toFinished(Instant.now());
-            history.add(finished);
+            history.addFirst(finished);
+            if (history.size() > config.historyLimit()) {
+                history.removeLast();
+            }
             live.remove(matchId);
         });
     }
@@ -125,7 +128,7 @@ public final class InMemoryScoreboard implements Scoreboard {
 
     @Override
     public List<FinishedMatch> getHistory() {
-        return withReadLock(() -> List.copyOf(history).stream().toList());
+        return withReadLock(() -> List.copyOf(history));
     }
 
     @Override

@@ -551,3 +551,23 @@ Updated [TeamName.java](/Users/maciej/repo-all/recruitment/src/main/java/com/mc4
 Verification passed: all 6 `TeamName` tests and 14 related acceptance tests, 20 tests total.
 
 ---
+
+## Prompt 22 — User
+
+> `/tdd` Implement the missing history-related methods so AT-20, AT-22, and AT-37 pass.
+>
+> [@InMemoryScoreboard.java](file:///Users/maciej/repo-all/recruitment/src/main/java/com/mc4/scoreboard/core/InMemoryScoreboard.java)
+
+### Assistant — Response 22
+
+Implemented bounded, newest-first history in [InMemoryScoreboard.java](/Users/maciej/repo-all/recruitment/src/main/java/com/mc4/scoreboard/core/InMemoryScoreboard.java:35):
+
+- History now uses `ArrayDeque`.
+- `finishMatch` inserts with `addFirst()` and evicts the oldest entry with `removeLast()` after exceeding `historyLimit`.
+- Insertion, eviction, and removal from live matches remain one atomic write-locked operation.
+- `getHistory()` returns an immutable `List.copyOf(...)` snapshot in newest-first order.
+- `SPECIFICATION.md` now reflects the implemented deque direction and eviction strategy.
+
+TDD verification: the three tests first failed, then AT-20, AT-22, and AT-37 all passed after implementation. A broader 14-test history, lifecycle, immutability, and concurrency regression set also passed with no failures.
+
+---
